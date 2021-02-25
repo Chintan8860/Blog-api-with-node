@@ -10,12 +10,16 @@ const authRoute = require('./routers/auth')
 const topicRoute = require('./routers/topic')
 const postRoute = require('./routers/post')
 const likeRoute = require('./routers/like')
+const commentRoute = require('./routers/comment')
+
 
 
 app.use(authRoute);
 app.use(topicRoute);
 app.use(postRoute);
 app.use(likeRoute);
+app.use(commentRoute);
+
 
 
 
