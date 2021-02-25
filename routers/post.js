@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const verify = require('./verifyLogin')
+const verify = require('../Auth/verifyLogin')
 const Topic = require('../model/Topic')
 
 

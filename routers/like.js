@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const Like = require('../model/Like')
-const verify = require('./verifyLogin')
+const verify = require('../Auth/verifyLogin')
 const Post = require('../model/Post')
 
 

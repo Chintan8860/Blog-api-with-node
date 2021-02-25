@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         minLength: 6
     }
-})
+}, { timestamps: { updatedAt: false } })
 
 
 const User = mongoose.model('User', userSchema)

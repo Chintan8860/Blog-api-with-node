@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const Topic = require('../model/Topic')
-const verify = require('./verifyLogin')
+const verify = require('../Auth/verifyLogin')
 
 // Create New Topic
 

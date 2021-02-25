@@ -1,21 +1,20 @@
 const router = require('express').Router();
-const verify = require('./verifyLogin')
+const verify = require('../Auth/verifyLogin')
 const Comment = require('../model/Comment')
 const Post = require('../model/Post')
 
 router.post("/post/:id/comment", verify, async (req, res) => {
 
-
-
     try {
         const result = await Post.findById(req.params.id)
-        console.log(result);
+        // console.log(result);
+        if (req.body.comment.length < 5) return res.send({ error: "Comment Min length 5!!!" })
         const comment = new Comment({
             comment: req.body.comment,
             postId: result._id,
             CommentBy: req.user
         });
-        console.log(comment);
+        // console.log(comment);
         await comment.save()
         res.status(201).send({
             comment: {

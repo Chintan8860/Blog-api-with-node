@@ -11,6 +11,6 @@ var topicSchema = new mongoose.Schema({
         type: 'string',
         required: true,
     }
-}, { timestamps: true })
+}, { timestamps: { updatedAt: false } })
 
 module.exports = mongoose.model('Topic', topicSchema)
