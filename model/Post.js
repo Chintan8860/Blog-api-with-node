@@ -8,7 +8,7 @@ var postSchema = new mongoose.Schema({
     },
     topic: {
         type: 'string',
-        ref: 'Topic'
+        required: true
     },
     content: {
         type: 'string',

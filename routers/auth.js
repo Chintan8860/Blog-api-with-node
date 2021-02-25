@@ -1,27 +1,31 @@
 const router = require('express').Router();
 const User = require('../model/User');
-
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const validate = require('../validation/validation')
 
 
 router.post('/register', async (req, res) => {
 
-    const emailCheck = await User.findOne({ email: req.body.email })
-    const errorMsg = {}
-    errorMsg.error = []
-    if (emailCheck) {
-        errorMsg.error.push('Email alredy Exits')
-    }
-    const passwordCheck = req.body.password.length;
-    if (passwordCheck < 6) {
-        errorMsg.error.push('password length min 6 required!!!')
-    }
-    if (errorMsg.error.length > 0) {
-        return res.send(errorMsg)
-    }
-    const salt = await bcrypt.genSalt(10);
+    //Check all value
+    if (req.body.email == undefined || req.body.name == undefined || req.body.password == undefined)
+        return res.send({ error: "All Filed is Required" })
 
+    //Email Format Check
+    if (!validate.emailCheck(req.body.email)) return res.status(400).send({ error: "Enter Correct Email Address!!!" })
+
+    //Password Length Check
+    if (validate.lengthCheck(req.body.password, 6)) return res.status(400).send({ error: 'password length min 6 required!!!' })
+
+    //Name Length Check
+    if (validate.lengthCheck(req.body.name, 3)) return res.status(400).send({ error: 'Name length min 3 required!!!' })
+
+    //Unique Email check
+    const emailCheck = await User.findOne({ email: req.body.email })
+    if (emailCheck) return res.status(400).send({ error: 'Email id Alredy Exits!!!' })
+
+    //Encrypt Password
+    const salt = await bcrypt.genSalt(10);
 
     const user = new User({
         name: req.body.name,
@@ -31,18 +35,24 @@ router.post('/register', async (req, res) => {
 
     try {
         const savedUser = await user.save();
-        res.status(201).send(savedUser);
+        res.status(201).send({ msg: "Registration Sucessfull", savedUser });
 
     } catch (error) {
-        errorMsg.dbError = error.message
-        res.status(400).send(errorMsg)
+        res.status(400).send({ Msg: "Registration Failed!!!", error })
     }
 
 });
 
 router.post('/login', async (req, res) => {
-    if (req.body.email === null || req.body.password === null) return res.send({ error: "Email And Password Must Required!!!" })
 
+    //Check all value
+    if (req.body.email == undefined || req.body.password == undefined)
+        return res.send({ error: "All Filed is Required" })
+
+    //Email Format Check
+    if (!validate.emailCheck(req.body.email)) return res.status(400).send({ error: "Enter Correct Email Address!!!" })
+
+    //Check User Details
     const user = await User.findOne({ email: req.body.email })
     if (!user) return res.send({ error: "Email Or Password not match!!!" })
 
@@ -51,8 +61,9 @@ router.post('/login', async (req, res) => {
 
 
     const token = jwt.sign({ _id: user._id }, 'LanetDemoBlogProject')
-    res.header('auth-token', token).send(token)
-    // res.send(req.body)
+
+    //Set Auth token
+    res.header('auth-token', token).send({ msg: "User Login Successfully!!", token })
 
 });
 

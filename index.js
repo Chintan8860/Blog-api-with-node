@@ -1,26 +1,16 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT || 3000
+const port = 3000
 
 require('./dataBase/mongoose')
 
 app.use(express.json())
 
-const authRoute = require('./routers/auth')
-const topicRoute = require('./routers/topic')
-const postRoute = require('./routers/post')
-const likeRoute = require('./routers/like')
-const commentRoute = require('./routers/comment')
-
-
-
-app.use(authRoute);
-app.use(topicRoute);
-app.use(postRoute);
-app.use(likeRoute);
-app.use(commentRoute);
-
-
+app.use(require('./routers/auth'));
+app.use(require('./routers/topic'));
+app.use(require('./routers/post'));
+app.use(require('./routers/like'));
+app.use(require('./routers/comment'));
 
 
 app.get('*', (req, res) => {

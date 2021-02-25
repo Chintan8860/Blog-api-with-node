@@ -1,24 +1,25 @@
 const router = require('express').Router();
 const verify = require('../Auth/verifyLogin')
 const Topic = require('../model/Topic')
-
-
 const Post = require('../model/Post')
+const validate = require('../validation/validation')
 
 // create Post
-router.post("/post/:id", verify, async (req, res) => {
-    const _id = req.params.id
-    console.log(_id);
+router.post("/post/:topicId", verify, async (req, res) => {
+
     try {
-        const topic = await Topic.find({ _id: _id })
+        //Check Correct Topic
+        const topic = await Topic.find({ _id: req.params.topicId })
         if (!topic) {
             return res.status(404).send({ error: "Topic Not Found!!" })
         }
-        // if(topic.length) ;
-        if (req.body.title === null || req.body.title === '') return res.send({ error: "Title required!!!" })
-        if (req.body.content === null || req.body.content === '') return res.send({ error: "Content required!!!" })
-        if (req.body.title.length < 5) return res.send({ error: "Title Min length 5!!!" })
-        if (req.body.content.length < 10) return res.send({ error: "Content Min length 10!!!" })
+        // check All fields
+        if (req.body.title == undefined || req.body.content == undefined)
+            return res.send({ error: "All Filed is Required" })
+
+        //check length
+        if (validate.lengthCheck(req.body.title, 5)) return res.send({ error: "Title Min length 5!!!" })
+        if (validate.lengthCheck(req.body.content, 10)) return res.send({ error: "Content Min length 10!!!" })
 
 
         const post = new Post({
@@ -30,13 +31,13 @@ router.post("/post/:id", verify, async (req, res) => {
 
         try {
             await post.save()
-            res.status(201).send({ post })
-        } catch (e) {
-            res.status(400).send({ error: e.message })
+            res.status(201).send({ msg: "Post Created Sucessfully", topic: topic[0].name, post })
+        } catch (error) {
+            res.status(400).send({ msg: "Post Creation Failed!!", error })
         }
 
     } catch (error) {
-        return res.status(404).send({ error: "Something Wrong Make sure Pass All value!!!" })
+        return res.status(404).send({ error: "Something Wrong Make sure Pass Correct topic value!!!" })
     }
 
 
@@ -57,8 +58,8 @@ router.get('/post/recent', (req, res) => {
 
     //for Asc Order 1 and desc order -1
     //set limit => Show number of post
-    //ex:- /post/recent?order=1&limit=2
-    Post.find().sort({ createdAt: parseInt(req.query.order) }).limit(parseInt(req.query.limit)).find((err, result) => {
+    //ex:- /post/recent?limit=2
+    Post.find().sort({ createdAt: -1 }).limit(parseInt(req.query.limit)).find((err, result) => {
         if (err) return res.status(400).send({ error: err })
         res.status(200).send(result)
     })
