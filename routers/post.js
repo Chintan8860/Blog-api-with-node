@@ -4,6 +4,7 @@ const Topic = require('../model/Topic')
 const Post = require('../model/Post')
 const validate = require('../validation/validation')
 
+
 // create Post
 router.post("/post/:topicId", verify, async (req, res) => {
 
@@ -79,55 +80,32 @@ router.get('/post/:id', (req, res) => {
 
 //edit Post by post id
 router.patch('/post/:id', verify, async (req, res) => {
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ["title", "content", "topic"]
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
-    if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid updates!' })
+    if (req.body.title != undefined) {
+        if (validate.lengthCheck(req.body.title, 5)) return res.status(400).send({ error: 'title length min 6 required!!!' })
     }
+    if (req.body.content != undefined) if (validate.lengthCheck(req.body.content, 10)) return res.status(400).send({ error: 'content length min 6 required!!!' })
 
-    try {
-        const result = await Post.findOne({ _id: req.params.id })
-        const topicId = req.body.topic
-        const title = req.body.title
-        const content = req.body.content
-        updates.forEach((update) => result[update] = req.body[update])
-        if (title) {
-            if (req.body.title === null || req.body.title === '') return res.send({ error: "Title required!!!" })
-            if (req.body.title.length < 5) return res.send({ error: "Title Min length 5!!!" })
-        }
-        if (content) {
-            if (req.body.content === null || req.body.content === '') return res.send({ error: "Content required!!!" })
-            if (req.body.content.length < 10) return res.send({ error: "Content Min length 10!!!" })
-        }
-        if (!topicId) {
-            await result.save()
-            if (!result) {
-                return res.status(404).send()
-            }
-            res.send(result)
-        }
+    if (req.body.topic != undefined) {
         try {
-            const topic = await Topic.findById({ _id: topicId })
-            if (!topic) return res.status(404).send({ error: "Topic Not Found!!" })
-            await result.save()
-            if (!result) {
-                return res.status(404).send()
-            }
-
-            res.send(result)
-
+            const topicresult = await Topic.findById(req.body.topic)
+            if (!topicresult) return res.status(404).send({ error: "Topic Not Found!!" })
         } catch (error) {
             return res.status(404).send({ error: "Topic Not Found!!" })
         }
-
-
-
-    } catch (error) {
-        console.log({ error: "Post Not Updated!!!" });
-        res.status(400).send()
     }
+    if (req.body.like) return res.status(400).send({ error: 'Can not update like!!!' })
+    const updatePost = {
+        ...req.body
+    }
+    try {
+        await Post.findOneAndUpdate({ _id: req.params.id, createdBy: req.user._id }, updatePost)
+        const UpdatedPost = await Post.find({ _id: req.params.id })
+        res.send(UpdatedPost)
+    } catch (error) {
+        res.send({ error: "Post not Updated" })
+    }
+
 })
 
 
