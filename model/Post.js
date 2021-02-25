@@ -15,8 +15,9 @@ var postSchema = new mongoose.Schema({
         minLength: 10,
         required: true
     },
-    comments: {
-        type: 'string',
+    like: {
+        type: Number,
+        default: 0
     },
     createdBy: {
         type: 'string',

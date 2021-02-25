@@ -56,7 +56,8 @@ router.get('/post', (req, res) => {
 router.get('/post/recent', (req, res) => {
 
     //for Asc Order 1 and desc order -1
-    // console.log(req.query.order + " " + req.query.limit);
+    //set limit => Show number of post
+    //ex:- /post/recent?order=1&limit=2
     Post.find().sort({ createdAt: parseInt(req.query.order) }).limit(parseInt(req.query.limit)).find((err, result) => {
         if (err) return res.status(400).send({ error: err })
         res.status(200).send(result)
@@ -75,7 +76,7 @@ router.get('/post/:id', (req, res) => {
 
 });
 
-//Update Post by post id
+//edit Post by post id
 router.patch('/post/:id', verify, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ["title", "content", "topic"]
