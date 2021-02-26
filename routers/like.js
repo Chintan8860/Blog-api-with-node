@@ -13,30 +13,22 @@ router.post("/post/like/:id", verify, async (req, res) => {
             likedBy: req.user,
             postId: result._id
         })
-
-        const updates = Object.keys({ like: result.like + 1 })
-        const allowedUpdates = ["like"]
-        const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
-
-        if (!isValidOperation) {
-            return res.status(400).send({ error: 'Like not updated!!!' })
+        const updateLike = {
+            like: result.like + 1
         }
         try {
+            await Post.findOneAndUpdate({ _id: result._id }, updateLike)
+            const UpdatedLike = await Post.find({ _id: req.params.id })
+
             await like.save()
-            updates.forEach((update) => result[update] = result.like + 1)
-            await result.save()
-            if (!result) {
-                return res.status(404).send({ error: 'Like not updated!!!' })
-            }
-            res.status(201).send(
-                {
-                    msg: "post Liked Successfully!!",
-                    likedPost: {
-                        postID: like._id, title: result.title
-                    }
-                })
+            res.send({
+                msg: "post Liked Successfully!!",
+                likedPost: {
+                    postID: like._id, title: result.title, totalLike: UpdatedLike[0].like
+                }
+            })
         } catch (error) {
-            res.status(400).send({ error: "post like opration is not done!!!" })
+            res.send({ error: "Like not Updated" })
         }
 
     }

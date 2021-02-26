@@ -13,10 +13,32 @@ app.use(require('./routers/like'));
 app.use(require('./routers/comment'));
 
 
+const authRouter = {
+    register: "/register",
+    login: "/login",
+}
+const openRouter = {
+    getAllTopic: "/topic",
+    getAllPost: "/post",
+    getPostByTopic: "/post/:topicId",
+    getMostRecentPost: "/post/recent?limit={}",
+    getMostLikePost: "/mostlike?limit={}"
+}
+const privateRouter = {
+    createTopic: "/topic",
+    createPost: "/post/:topicId",
+    editPost: "/post/:postId",
+    deletePost: "/post/:postId",
+    likePost: "/post/like/:postId",
+    dislikePost: "/post/dislike/:postId",
+    commentOnPost: "/post/:postId/comment"
+
+}
 app.get('*', (req, res) => {
-    res.send({ error: "Page not Found" })
+    res.send({ Authintication: authRouter, withoutAuth: openRouter, withAuth: privateRouter })
 })
 
 app.listen(port, () => {
     console.log('Server is on !!!', port)
 })
+
