@@ -1,44 +1,81 @@
-const express = require('express')
-const app = express()
-const port = 3000
+import { PrismaClient } from "@prisma/client";
+import express from "express";
+import { graphqlHTTP } from "express-graphql";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import bodyParser from "body-parser";
 
-require('./dataBase/mongoose')
+const prisma = new PrismaClient();
 
-app.use(express.json())
-
-app.use(require('./routers/auth'));
-app.use(require('./routers/topic'));
-app.use(require('./routers/post'));
-app.use(require('./routers/like'));
-app.use(require('./routers/comment'));
+const typeDefs = `
 
 
-const authRouter = {
-    register: "/register",
-    login: "/login",
-}
-const openRouter = {
-    getAllTopic: "/topic",
-    getAllPost: "/post",
-    getPostByTopic: "/post/:topicId",
-    getMostRecentPost: "/post/recent?limit={}",
-    getMostLikePost: "/mostlike?limit={}"
-}
-const privateRouter = {
-    createTopic: "/topic",
-    createPost: "/post/:topicId",
-    editPost: "/post/:postId",
-    deletePost: "/post/:postId",
-    likePost: "/post/like/:postId",
-    dislikePost: "/post/dislike/:postId",
-    commentOnPost: "/post/:postId/comment"
+type People {
+    id: Int
+    name: String
+    User:User
+  }
 
-}
-app.get('*', (req, res) => {
-    res.send({ Authintication: authRouter, withoutAuth: openRouter, withAuth: privateRouter })
-})
+  type User {
+    id: Int
+    name: String
+    People: People 
+  }
 
-app.listen(port, () => {
-    console.log('Server is on !!!', port)
-})
+  type Query {
+    allUsers: User!
+    allPeople: People!
+  }
+`;
 
+const resolvers = {
+  Query: {
+    allUsers: async (_parent,  te) => {
+      console.log(te);
+      return prisma.user.findFirst({
+        select: {
+          id: true,
+          name: true,
+          People: {
+            select: {
+                id: true
+            }
+          }
+        },
+      });
+    },
+    allPeople: async() => {
+      
+      const a =  await prisma.people.findFirst({
+        select: {
+          id: true,
+          name: true,
+          User: {
+            select: {
+                id: true
+            }
+          }
+        },
+      });
+
+      console.log(a)
+      return a
+    },
+  },
+};
+
+export const schema = makeExecutableSchema({
+  resolvers,
+  typeDefs,
+});
+
+const app = express();
+
+app.use(bodyParser.json());
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+  })
+);
+
+app.listen(4500);
